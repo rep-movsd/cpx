@@ -16,7 +16,9 @@ using namespace std;
 #define PROP(T, PROPNAME) THISCLASS& PROPNAME(T x) { ostringstream oss; oss << x; props[#PROPNAME] = oss.str(); return *this;}
 
 // Helper for enum with string names
-#define MAKE_ENUM_NAME(x) {x, #x}
+#define ENUM_NAME(x) {x, #x}
+#define MAKE_ENUM_NAMES(T, ...) static map<Color, string> T ## Names = { __VA_ARGS__ }
+#define MAKE_OSTREAM_OP(T) ostream& operator<<(ostream& os, const T& c) { os << T ## Names[c];  return os;  }
 
 
 // Represents a node

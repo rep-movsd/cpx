@@ -14,25 +14,10 @@ Example:
 
 CPX_PLACEHOLDER(_);
 
-// Example typed properties
+// Example typed enum property
 enum Color {red, green, blue, cyan, magenta, white};
-
-ostream& operator<<(ostream& os, const Color& c)  
-{  
-  static map<Color, string> names = 
-  {  
-    MAKE_ENUM_NAME(red), 
-    MAKE_ENUM_NAME(green), 
-    MAKE_ENUM_NAME(blue), 
-    MAKE_ENUM_NAME(cyan), 
-    MAKE_ENUM_NAME(magenta), 
-    MAKE_ENUM_NAME(white)
-  };
-  
-  os << names[c];  
-  return os;  
-}  
-
+MAKE_ENUM_NAMES(Color, ENUM_NAME(red), ENUM_NAME(green), ENUM_NAME(blue));
+MAKE_OSTREAM_OP(Color);
 
 // Lets define a couple of tags with typed properties
 TAG(DivTag)
@@ -42,19 +27,14 @@ TAG(DivTag)
   PROP(int, width);
 };
 
-DivTag DIV;
-
-
 TAG(PTag)
 {
   TAGNAME(PTag, "p");
   PROP(Color, color);
 };
 
+DivTag DIV;
 PTag P;
-
-///////////////////////////////////////////
-
 
 int main()
 {
