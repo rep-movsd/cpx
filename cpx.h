@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <sstream>
+#include <iostream>
 #include <map>
 using namespace std;
 
@@ -10,15 +11,10 @@ using namespace std;
 // Define your tags 
 #define CPX_ELEM(x) CPXElem x(#x)
 
-// Helpers for defining typed properties
+
 #define TAG(CLASSNAME) struct CLASSNAME : public CPXElem
 #define TAGNAME(CLASSNAME, TAGNAME) CLASSNAME():CPXElem(TAGNAME) {} typedef CLASSNAME THISCLASS
 #define PROP(T, PROPNAME) THISCLASS& PROPNAME(T x) { ostringstream oss; oss << x; props[#PROPNAME] = oss.str(); return *this;}
-
-// Helper for enum with string names
-#define ENUM_NAME(x) {x, #x}
-#define MAKE_ENUM_NAMES(T, ...) static map<Color, string> T ## Names = { __VA_ARGS__ }
-#define MAKE_OSTREAM_OP(T) ostream& operator<<(ostream& os, const T& c) { os << T ## Names[c];  return os;  }
 
 
 // Represents a node
@@ -31,6 +27,7 @@ struct CPXNode
   const char *tag;
   vector< CPXNode *> children;
   map<string, string> props;
+  map<string, string> css;
   
   CPXNode (CPXNode *pParent = nullptr): parent(pParent) {}
   
@@ -74,6 +71,16 @@ struct CPXNode
       cout << " " << prop.first << "=" << "'" << prop.second << "'"; 
     }
     
+    if(css.size())
+    {
+      cout << " style='";
+      for(const auto &style: css)
+      {
+        cout << style.first << ":" <<  style.second << ";"; 
+      }
+      cout << "'";
+    }
+    
     cout << ">" << endl;
     
     if(children.size())
@@ -90,7 +97,6 @@ struct CPXNode
     
     cout << string(indent * 2, ' ')  << "</" << tag << ">" << endl;
   }
-  
 };
 
 
@@ -103,10 +109,6 @@ struct CPXElem
 };
 
 
-// Dummy class used to provide punctuation
-struct CPXPlaceHolder {};
-
-
 // Class used to wrap up the / operator that appears in closing tags
 struct CPXTagCloser
 {
@@ -115,12 +117,17 @@ struct CPXTagCloser
 };
 
 
-// _ / TAG 
-// Return CPXTagCloser(TAG)
-const CPXTagCloser operator/(const CPXPlaceHolder&, const CPXElem& e)
+// Dummy class used to provide punctuation
+struct CPXPlaceHolder 
 {
-  return CPXTagCloser(e);
-}
+  // _ / TAG 
+  // Return CPXTagCloser(TAG)
+  const CPXTagCloser operator/(const CPXElem& e)
+  {
+    return CPXTagCloser(e);
+  }
+};
+
 
 
 // The main meta parser
@@ -130,28 +137,34 @@ struct CPX
   CPXNode *current;
   CPX() : root(nullptr), current(nullptr) {}
   
-  // CPX < TAG 
-  // Add this node to current and make current into new node (descend)
-  CPX& operator< (CPXElem &e)
+  template<typename T> CPX& addTag(T &e)
   {
     CPXNode *n;
     if(!current)
     {
       n = new CPXNode ();
-      current = root = n;
+      root = n;
     }
     else
     {
       n = current->addChild();
-      current = n;
     }
     
+    current = n;
+    
     // Copy the tag and inline props, clear the props so the tag can be reused
-    n->tag = e.tag;
-    n->props = e.props;
+    current->tag = e.tag;
+    current->props = e.props;
     e.props.clear();
-
+    
     return *this;
+  }
+  
+  // CPX < TAG 
+  // Add this node to current and make current into new node (descend)
+  CPX& operator< (CPXElem &e)
+  {
+    return addTag(e);
   }
   
   // CPX > _ or CPX = _

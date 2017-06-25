@@ -11,70 +11,59 @@ Example:
 ```cpp
 #include <iostream>
 #include "cpx.h"
+#include "cpx_html.h"
 
 CPX_PLACEHOLDER(_);
 
-// Example typed enum property
-enum Color {red, green, blue, cyan, magenta, white};
-MAKE_ENUM_NAMES(Color, ENUM_NAME(red), ENUM_NAME(green), ENUM_NAME(blue));
-MAKE_OSTREAM_OP(Color);
-
 // Lets define a couple of tags with typed properties
-TAG(DivTag)
-{
-  TAGNAME(DivTag, "div");
-  PROP(int, height);
-  PROP(int, width);
+STYLEDTAG(DivTag) 
+{ 
+  STYLEDTAGNAME(DivTag, "div");
+  PROP(string, id);
 };
-
-TAG(PTag)
-{
-  TAGNAME(PTag, "p");
-  PROP(Color, color);
-};
+STYLEDTAG(PTag) { STYLEDTAGNAME(PTag, "p");};
 
 DivTag DIV;
 PTag P;
+
+///////////////////////////////////////////
+
+struct CPXStyle STYLE;
 
 int main()
 {
   CPX cpx;
 
   cpx
-    <DIV .height(20) .width(100)> _
+    <DIV .id("root") (STYLE .height(20) .width(100)) > _
       <P>"Hello world"<_/P>_
-      <DIV .width(70) >_
-        <P .color(blue) >(2 * 3 / 5.0F)<_/P>_
-        <P>"Hell world"<_/P>_
+      <DIV>_
+        <P (STYLE .color(BLUE)) >"Hell world"<_/P>_
       <_/DIV>_
     <_/DIV> 
   _;
 
   cpx.root->dump();
 }
-
 ```
 
 As you can see, we are forced to use some noise symbol like "_" but you can easily transform regular HTML into this form deterministically
 
 This program produces the following output:
 ```
-$ ./a.out
-<div height='20' width='100'>
-  <p color='blue'>
+rep ~/projects/cpx * master $ g++ main.cpp cpx_html.cpp
+rep ~/projects/cpx * master $ ./a.out
+<div id='root' style='height:20;width:100;'>
+  <p style='color:BLUE;'>
     Hello world
   </p>
   <div>
-    <p>
-      1.2
-    </p>
     <p>
       Hell world
     </p>
   </div>
 </div>
 ```
-
 Is that neat or what?
 
 ---
@@ -99,6 +88,7 @@ The caveats:
 
  * Implement a tree diffing algorithm
  * Build with emscripten to use on the browser
+ * Add standard attributes for css styles and HTML elements
  
 
  
