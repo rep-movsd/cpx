@@ -22,12 +22,13 @@ struct CPXStyle STYLE;
 int main()
 {
   CPX cpx;
-
+  
+  
   cpx
-    <DIV .id("root") (STYLE .height(20) .width(100)) > _
+  <DIV .id("root") [STYLE .height(20) .width(100) .display(inline_) ] > _
       <P>"Hello world"<_/P>_
       <DIV>_
-        <P (STYLE .color(BLUE)) >"Hell world"<_/P>_
+        <P [STYLE .color(BLUE)] >"Hell world"<_/P>_
       <_/DIV>_
     <_/DIV> 
   _;
